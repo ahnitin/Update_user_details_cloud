@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form onsubmit="SaveToCloudStorage(event)">
+        <label>Name</label>
+        <input type="text" name="username" id="usernameInputTag" required/>
+        <label>EmailID</label>
+        <input type="email" name="emailid" id="emailInputTag" required>
+        <label>Phone Number</label>
+        <input type="tel" name="contactNo" id="phoneNumberInputTag">
+        <button type="submit">Submit</button>
+    </form>
+    <ul id="ListofItems">ListofItems</ul>
+    <div id="res"></div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        axios.get("https://crudcrud.com/api/8e222301bae045cea3e2e36bbe2abd1c/UserDetails")
+        .then(res=>{
+            for(var i=0;i<res.data.length;i++)
+            { 
+                Storeuseronscreen(res.data[i])}
+        })
+        .catch(err => console.log(err));
+        function SaveToCloudStorage(event)
+        {
+            event.preventDefault(); 
+            const name = event.target.username.value;
+            const Email = event.target.emailid.value;
+            const Phone = event.target.contactNo.value;
+ /*            localStorage.setItem("username",name);
+            localStorage.setItem("email",Email);
+            localStorage.setItem("contact",Phone); */
+            //end
+            const obj ={
+                name,
+                Email,
+                Phone
+            }
+            addUser(obj);
+        function addUser(obj){    
+            axios.post("https://crudcrud.com/api/8e222301bae045cea3e2e36bbe2abd1c/UserDetails",obj)
+        .then(res => Storeuseronscreen(res.data))
+        .catch(err => console.log(err));
+        console.log('POST Request');
+        }
+        }
+        function Storeuseronscreen(obj)
+        {
+
+            const parentEle = document.getElementById('ListofItems');
+            //parentEle.innerHTML =`<li>${obj.name} - ${obj.Email} - ${obj.Phone}</li>`
+            const childEle = document.createElement('li');
+            childEle.textContent = obj.Name + "-" + obj._id + "-" + obj.Phone;
+            const deletebtn = document.createElement('input');
+            deletebtn.type = 'button';
+            deletebtn.value = 'delete';
+            let userid = obj._id
+            deletebtn.onclick = () => delete_user_fromscreen(obj._id);
+            
+            const Editbtn = document.createElement('input');
+            Editbtn.type ="button";
+            Editbtn.value ="Edit";
+            Editbtn.onclick =() =>{
+                //localStorage.removeItem(userid);
+                parentEle.removeChild(childEle);
+                document.getElementById('usernameInputTag').value = obj.Name;
+                document.getElementById('emailInputTag').value = obj.EmailId;
+                document.getElementById('phoneNumberInputTag').value = obj.ContactNo;
+
+            }
+            childEle.appendChild(deletebtn);
+            childEle.appendChild(Editbtn);
+            parentEle.appendChild(childEle);
+        }
+        function delete_user_fromscreen(userid) {
+            const parentEle = document.getElementById('ListofItems');
+
+            // Loop through child elements to find the correct one based on _id
+            for (let i = 0; i < parentEle.children.length; i++) {
+                const child = parentEle.children[i];
+                if (child.textContent.includes(userid)) {
+                    parentEle.removeChild(child);
+                    break; // Exit the loop once the user is deleted
+                }
+            }
+
+            // Send a DELETE request to your server to delete the user
+            axios.delete(`https://crudcrud.com/api/8e222301bae045cea3e2e36bbe2abd1c/UserDetails/${userid}`)
+                .then(res => {
+                    console.log('User deleted:', userid);
+                })
+                .catch(err => console.log(err));
+        }
+    </script>
+</body>
+</html>
